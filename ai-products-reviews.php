@@ -1,13 +1,16 @@
 <?php
 /*
 Plugin Name: AI Product Reviews
-Plugin URI: http://skillyweb.com
+Plugin URI: https://github.com/hassanzn2023/ai-product-reviews
 Description: Automatically generates product reviews using AI by fetching product title and description.
 Version: 2.1
 Author: Hassan Zein
 Author URI: http://skillyweb.com
 Text Domain: ai-reviews
+GitHub Plugin URI: https://github.com/hassanzn2023/ai-product-reviews
+GitHub Branch: main
 */
+
 
 defined('ABSPATH') or die('No script kiddies please!');
 
