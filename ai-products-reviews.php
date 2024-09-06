@@ -557,10 +557,10 @@ function check_for_plugin_update($transient) {
 
     // مقارنة النسخة الحالية مع النسخة المتاحة على GitHub
     if ($response && version_compare('2.1', $response['tag_name'], '<')) {
-        $transient->response[''ai-product-reviews/ai-product-reviews.php'] = array(
+        $transient->response['ai-product-reviews/ai-product-reviews.php'] = array(
             'new_version' => $response['tag_name'],
             'package' => $response['zipball_url'], // الرابط لتحميل ملف التحديث
-            'slug' => 'your-plugin-folder',
+            'slug' => 'ai-product-reviews',
         );
     }
 
@@ -570,7 +570,7 @@ add_filter('site_transient_update_plugins', 'check_for_plugin_update');
 
 // وظيفة لتحميل التحديث من GitHub
 function update_plugin_from_github($false, $action, $response) {
-    if (!isset($response->slug) || $response->slug != 'your-plugin-folder') {
+    if (!isset($response->slug) || $response->slug != 'ai-product-reviews') {
         return false;
     }
 
