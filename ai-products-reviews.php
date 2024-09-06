@@ -580,3 +580,34 @@ function update_plugin_from_github($false, $action, $response) {
     return $response;
 }
 add_filter('upgrader_package_options', 'update_plugin_from_github', 10, 3);
+
+
+function ai_reviews_check_for_plugin_update( $transient ) {
+    if ( empty( $transient->checked ) ) {
+        return $transient;
+    }
+
+    $remote_version_url = 'https://raw.githubusercontent.com/hassanzn2023/ai-product-reviews/main/version.json';
+
+    $response = wp_remote_get( $remote_version_url );
+
+    if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+        return $transient;
+    }
+
+    $data = json_decode( wp_remote_retrieve_body( $response ) );
+
+    if ( version_compare( $transient->checked['ai-product-reviews/ai-products-reviews.php'], $data->new_version, '<' ) ) {
+        $plugin = array(
+            'slug' => 'ai-product-reviews',
+            'new_version' => $data->new_version,
+            'url' => $data->url,
+            'package' => $data->download_url,
+        );
+
+        $transient->response['ai-product-reviews/ai-products-reviews.php'] = (object) $plugin;
+    }
+
+    return $transient;
+}
+add_filter( 'pre_set_site_transient_update_plugins', 'ai_reviews_check_for_plugin_update' );
