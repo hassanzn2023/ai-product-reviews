@@ -541,3 +541,42 @@ function ai_reviews_log($message) {
         error_log($message);
     }
 }
+
+// وظيفة للتحقق من وجود تحديثات جديدة على GitHub
+function check_for_plugin_update($transient) {
+    // الرابط إلى API الإصدار الأخير في GitHub
+    $remote = wp_remote_get('https://api.github.com/repos/hassanzn2023/ai-product-reviews/releases/latest');
+    
+    // التحقق مما إذا كان هناك خطأ في الاتصال بـ GitHub
+    if (is_wp_error($remote)) {
+        return $transient;
+    }
+
+    // تحليل الرد من API GitHub
+    $response = json_decode(wp_remote_retrieve_body($remote), true);
+
+    // مقارنة النسخة الحالية مع النسخة المتاحة على GitHub
+    if ($response && version_compare('2.1', $response['tag_name'], '<')) {
+        $transient->response[''ai-product-reviews/ai-product-reviews.php'] = array(
+            'new_version' => $response['tag_name'],
+            'package' => $response['zipball_url'], // الرابط لتحميل ملف التحديث
+            'slug' => 'your-plugin-folder',
+        );
+    }
+
+    return $transient;
+}
+add_filter('site_transient_update_plugins', 'check_for_plugin_update');
+
+// وظيفة لتحميل التحديث من GitHub
+function update_plugin_from_github($false, $action, $response) {
+    if (!isset($response->slug) || $response->slug != 'your-plugin-folder') {
+        return false;
+    }
+
+    // تحديد الرابط الخاص بملف ZIP الخاص بالإصدار الجديد من GitHub
+    $response->package = 'https://github.com/hassanzn2023/ai-product-reviews/archive/refs/tags/' . $response->new_version . '.zip';
+    
+    return $response;
+}
+add_filter('upgrader_package_options', 'update_plugin_from_github', 10, 3);
