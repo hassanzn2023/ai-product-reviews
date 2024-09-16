@@ -582,32 +582,54 @@ function update_plugin_from_github($false, $action, $response) {
 add_filter('upgrader_package_options', 'update_plugin_from_github', 10, 3);
 
 
-function ai_reviews_check_for_plugin_update( $transient ) {
-    if ( empty( $transient->checked ) ) {
+function ai_reviews_check_for_plugin_update($transient) {
+    if (empty($transient->checked)) {
         return $transient;
     }
+
+    $plugin_slug = 'ai-product-reviews';
+    $plugin_file = $plugin_slug . '/ai-products-reviews.php';
+
+    // تسجيل للتصحيح
+    error_log('Checking for update for ' . $plugin_file);
+
+    // التحقق من وجود الإصدار الحالي
+    if (!isset($transient->checked[$plugin_file])) {
+        error_log('Current version not found in transient');
+        return $transient;
+    }
+
+    $current_version = $transient->checked[$plugin_file];
 
     $remote_version_url = 'https://raw.githubusercontent.com/hassanzn2023/ai-product-reviews/main/version.json';
+    $response = wp_remote_get($remote_version_url);
 
-    $response = wp_remote_get( $remote_version_url );
-
-    if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+    if (is_wp_error($response) || 200 !== wp_remote_retrieve_response_code($response)) {
+        error_log('Failed to fetch version info: ' . wp_remote_retrieve_response_code($response));
         return $transient;
     }
 
-    $data = json_decode( wp_remote_retrieve_body( $response ) );
+    $data = json_decode(wp_remote_retrieve_body($response));
 
-    if ( version_compare( $transient->checked['ai-product-reviews/ai-products-reviews.php'], $data->new_version, '<' ) ) {
-        $plugin = array(
-            'slug' => 'ai-product-reviews',
+    if (!isset($data->new_version) || !isset($data->download_url)) {
+        error_log('Invalid version data received');
+        return $transient;
+    }
+
+    error_log('Current version: ' . $current_version . ', New version: ' . $data->new_version);
+
+    if (version_compare($current_version, $data->new_version, '<')) {
+        $transient->response[$plugin_file] = (object) [
+            'slug' => $plugin_slug,
             'new_version' => $data->new_version,
-            'url' => $data->url,
+            'url' => $data->url ?? '',
             'package' => $data->download_url,
-        );
-
-        $transient->response['ai-product-reviews/ai-products-reviews.php'] = (object) $plugin;
+        ];
+        error_log('Update available');
+    } else {
+        error_log('No update available');
     }
 
     return $transient;
 }
-add_filter( 'pre_set_site_transient_update_plugins', 'ai_reviews_check_for_plugin_update' );
+add_filter('pre_set_site_transient_update_plugins', 'ai_reviews_check_for_plugin_update');
