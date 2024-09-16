@@ -568,18 +568,51 @@ function check_for_plugin_update($transient) {
 }
 add_filter('site_transient_update_plugins', 'check_for_plugin_update');
 
-// وظيفة لتحميل التحديث من GitHub
-function update_plugin_from_github($false, $action, $response) {
-    if (!isset($response->slug) || $response->slug != 'ai-product-reviews') {
+add_filter('upgrader_pre_download', 'filter_upgrader_pre_download', 10, 3);
+
+function filter_upgrader_pre_download($reply, $package, $upgrader) {
+    if (!$package) {
+        return $reply;
+    }
+
+    $plugin = isset($upgrader->skin->plugin) ? $upgrader->skin->plugin : '';
+    $plugin_slug = 'ai-product-reviews'; // تأكد من أن هذا هو اسم مجلد الإضافة الخاصة بك
+
+    // تطبيق الفلتر فقط على إضافتك
+    if ($plugin === $plugin_slug . '/ai-products-reviews.php') {
+        $github_response = get_github_update_package($upgrader);
+        if ($github_response) {
+            return $github_response;
+        }
+    }
+
+    return $reply;
+}
+
+function get_github_update_package($upgrader) {
+    $plugin_data = $upgrader->skin->plugin_info;
+    if (!$plugin_data) {
         return false;
     }
 
-    // تحديد الرابط الخاص بملف ZIP الخاص بالإصدار الجديد من GitHub
-    $response->package = 'https://github.com/hassanzn2023/ai-product-reviews/archive/refs/tags/' . $response->new_version . '.zip';
-    
-    return $response;
+    $github_api_url = 'https://api.github.com/repos/hassanzn2023/ai-product-reviews/releases/latest';
+    $response = wp_remote_get($github_api_url);
+
+    if (is_wp_error($response)) {
+        return false;
+    }
+
+    $release_data = json_decode(wp_remote_retrieve_body($response));
+    if (!$release_data || !isset($release_data->tag_name) || !isset($release_data->zipball_url)) {
+        return false;
+    }
+
+    if (version_compare($plugin_data['Version'], $release_data->tag_name, '<')) {
+        return $release_data->zipball_url;
+    }
+
+    return false;
 }
-add_filter('upgrader_package_options', 'update_plugin_from_github', 10, 3);
 
 
 function ai_reviews_check_for_plugin_update($transient) {
