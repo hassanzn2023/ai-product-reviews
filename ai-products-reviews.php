@@ -3,7 +3,7 @@
 Plugin Name: AI Product Reviews
 Plugin URI: https://github.com/hassanzn2023/ai-product-reviews
 Description: Automatically generates product reviews using AI by fetching product title and description.
-Version: 2.2
+Version: 2.3
 Author: Hassan Zein
 Author URI: http://skillyweb.com
 Text Domain: ai-reviews
@@ -647,11 +647,11 @@ function ai_reviews_check_for_plugin_update($transient) {
     }
 
     $plugin_slug = 'ai-product-reviews';
-    $plugin_file = $plugin_slug . '/ai-products-reviews.php';
+    $plugin_base_name = 'ai-product-reviews.php';
     
     // ابحث عن الملف الرئيسي للإضافة بغض النظر عن اسم المجلد
     $plugin_files = array_keys($transient->checked);
-    $found_plugin = preg_grep('/' . preg_quote($plugin_slug, '/') . '.*\/ai-products-reviews\.php/', $plugin_files);
+    $found_plugin = preg_grep('/' . preg_quote($plugin_slug, '/') . '.*\/' . preg_quote($plugin_base_name, '/') . '$/', $plugin_files);
     
     if (!empty($found_plugin)) {
         $plugin_file = reset($found_plugin);
@@ -685,6 +685,7 @@ function ai_reviews_check_for_plugin_update($transient) {
             'new_version' => $data->new_version,
             'url' => $data->url ?? '',
             'package' => $data->download_url,
+            'plugin' => $plugin_file, // إضافة هذا السطر
         ];
         error_log('Update available');
     } else {
