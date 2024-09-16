@@ -3,7 +3,7 @@
 Plugin Name: AI Product Reviews
 Plugin URI: https://github.com/hassanzn2023/ai-product-reviews
 Description: Automatically generates product reviews using AI by fetching product title and description.
-Version: 3.5
+Version: 1.5
 Author: Hassan Zein
 Author URI: http://skillyweb.com
 Text Domain: ai-reviews
@@ -575,11 +575,11 @@ function filter_upgrader_pre_download($reply, $package, $upgrader) {
         return $reply;
     }
 
+    $plugin_slug = 'ai-product-reviews';
     $plugin = isset($upgrader->skin->plugin) ? $upgrader->skin->plugin : '';
-    $plugin_slug = 'ai-product-reviews'; // تأكد من أن هذا هو اسم مجلد الإضافة الخاصة بك
-
-    // تطبيق الفلتر فقط على إضافتك
-    if ($plugin === $plugin_slug . '/ai-products-reviews.php') {
+    
+    // تحقق من أن الإضافة التي يتم تحديثها هي إضافتك
+    if (strpos($plugin, $plugin_slug) !== false) {
         $github_response = get_github_update_package($upgrader);
         if ($github_response) {
             add_filter('upgrader_source_selection', 'rename_github_folder', 10, 4);
@@ -593,10 +593,17 @@ function filter_upgrader_pre_download($reply, $package, $upgrader) {
 function rename_github_folder($source, $remote_source, $upgrader, $hook_extra) {
     global $wp_filesystem;
     
-    $plugin_slug = 'ai-product-reviews'; // تأكد من أن هذا هو اسم مجلد الإضافة الخاصة بك
+    $plugin_slug = 'ai-product-reviews';
     $proper_destination = WP_PLUGIN_DIR . '/' . $plugin_slug;
-    $wp_filesystem->move($source, $proper_destination, true);
-
+    
+    // تحقق من وجود المجلد القديم وقم بحذفه إذا كان موجودًا
+    if ($wp_filesystem->is_dir($proper_destination)) {
+        $wp_filesystem->delete($proper_destination, true);
+    }
+    
+    // انقل المحتويات من المجلد المؤقت إلى المجلد الصحيح
+    $wp_filesystem->move($source, $proper_destination);
+    
     return $proper_destination;
 }
 
@@ -633,13 +640,15 @@ function ai_reviews_check_for_plugin_update($transient) {
 
     $plugin_slug = 'ai-product-reviews';
     $plugin_file = $plugin_slug . '/ai-products-reviews.php';
-
-    // تسجيل للتصحيح
-    error_log('Checking for update for ' . $plugin_file);
-
-    // التحقق من وجود الإصدار الحالي
-    if (!isset($transient->checked[$plugin_file])) {
-        error_log('Current version not found in transient');
+    
+    // ابحث عن الملف الرئيسي للإضافة بغض النظر عن اسم المجلد
+    $plugin_files = array_keys($transient->checked);
+    $found_plugin = preg_grep('/' . preg_quote($plugin_slug, '/') . '.*\/ai-products-reviews\.php/', $plugin_files);
+    
+    if (!empty($found_plugin)) {
+        $plugin_file = reset($found_plugin);
+    } else {
+        error_log('Plugin file not found');
         return $transient;
     }
 
