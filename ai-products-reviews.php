@@ -3,7 +3,7 @@
 Plugin Name: AI Product Reviews
 Plugin URI: https://github.com/hassanzn2023/ai-product-reviews
 Description: Automatically generates product reviews using AI by fetching product title and description.
-Version: 2.5
+Version: 2.0
 Author: Hassan Zein
 Author URI: http://skillyweb.com
 Text Domain: ai-reviews
@@ -179,27 +179,6 @@ function ai_reviews_init() {
     </div>
     <?php
 }
-
-
-// Function to rename the plugin folder after update
-add_filter('upgrader_source_selection', 'rename_github_plugin_folder', 10, 3);
-function rename_github_plugin_folder($source, $remote_source, $upgrader) {
-    global $wp_filesystem;
-
-    // اسم المجلد الثابت الذي تريده
-    $correct_folder_name = 'ai-product-reviews';
-
-    // المجلد المؤقت بعد التحديث
-    $new_source = trailingslashit(dirname($source)) . $correct_folder_name;
-
-    // تحقق إذا كان المجلد الجديد مختلفًا عن الاسم الصحيح
-    if ($wp_filesystem->move($source, $new_source)) {
-        return $new_source; // قم بإعادة اسم المجلد الصحيح
-    } else {
-        return new WP_Error('rename_failed', __('Failed to rename the plugin folder.'));
-    }
-}
-
 
 // New function for the test page
 function ai_reviews_test_page() {
@@ -596,14 +575,13 @@ function filter_upgrader_pre_download($reply, $package, $upgrader) {
         return $reply;
     }
 
-    $plugin_slug = 'ai-product-reviews';
     $plugin = isset($upgrader->skin->plugin) ? $upgrader->skin->plugin : '';
-    
-    // تحقق من أن الإضافة التي يتم تحديثها هي إضافتك
-    if (strpos($plugin, $plugin_slug) !== false) {
+    $plugin_slug = 'ai-product-reviews'; // تأكد من أن هذا هو اسم مجلد الإضافة الخاصة بك
+
+    // تطبيق الفلتر فقط على إضافتك
+    if ($plugin === $plugin_slug . '/ai-products-reviews.php') {
         $github_response = get_github_update_package($upgrader);
         if ($github_response) {
-            add_filter('upgrader_source_selection', 'rename_github_folder', 10, 4);
             return $github_response;
         }
     }
@@ -611,30 +589,6 @@ function filter_upgrader_pre_download($reply, $package, $upgrader) {
     return $reply;
 }
 
-function rename_github_folder($source, $remote_source, $upgrader, $hook_extra) {
-    global $wp_filesystem;
-    
-    $plugin_slug = 'ai-product-reviews';
-    $proper_destination = WP_PLUGIN_DIR . '/' . $plugin_slug;
-    
-    // تحقق من وجود المجلد القديم وقم بحذفه إذا كان موجودًا
-    if ($wp_filesystem->is_dir($proper_destination)) {
-        $wp_filesystem->delete($proper_destination, true);
-    }
-    
-    // إزالة رقم الإصدار من اسم المجلد المصدر
-    $source_name = basename($source);
-    $new_source_name = preg_replace('/^' . preg_quote($plugin_slug, '/') . '-[\d.]+/', $plugin_slug, $source_name);
-    $new_source = dirname($source) . '/' . $new_source_name;
-    
-    // إعادة تسمية المجلد المصدر
-    $wp_filesystem->move($source, $new_source);
-    
-    // نقل المحتويات من المجلد المؤقت إلى المجلد الصحيح
-    $wp_filesystem->move($new_source, $proper_destination);
-    
-    return $proper_destination;
-}
 
 function get_github_update_package($upgrader) {
     $plugin_data = $upgrader->skin->plugin_info;
@@ -660,7 +614,6 @@ function get_github_update_package($upgrader) {
 
     return false;
 }
-
 
 function ai_reviews_check_for_plugin_update($transient) {
     if (empty($transient->checked)) {
