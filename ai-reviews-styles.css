@@ -1,70 +1,96 @@
-/* Styles for AI Product Reviews Settings page */
-.wrap {
-    max-width: 1000px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+/* AI Product Reviews Admin Styles */
+
+.ai-reviews-admin-wrap {
+    max-width: 960px;
 }
 
-h1 {
+.ai-reviews-admin-wrap .form-table th {
+    width: 200px; /* Consistent width for labels */
+    padding-right: 20px;
+}
+
+.ai-reviews-admin-wrap .form-table td {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.ai-reviews-admin-wrap .form-table td p.description {
+    margin-top: 5px;
+    font-size: 13px;
+    color: #555;
+}
+
+/* Style for textareas */
+.ai-reviews-admin-wrap textarea.large-text {
+    width: 100%;
+    max-width: 600px; /* Limit width for readability */
+    height: auto;
+}
+.ai-reviews-admin-wrap input.small-text {
+     width: 80px; /* Better sizing for number inputs */
+}
+
+/* Style for settings sections */
+.ai-reviews-admin-wrap h2 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+.ai-reviews-admin-wrap .form-table tr:first-child th,
+.ai-reviews-admin-wrap .form-table tr:first-child td {
+    padding-top: 15px; /* More space before first item */
+}
+
+/* Test Page Specific Styles */
+#test-review-result {
+    border: 1px solid #ccd0d4;
+    padding: 15px;
+    background-color: #f6f7f7;
+    margin-top: 25px;
+    border-radius: 4px;
+}
+
+#test-review-result h3 {
     margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 30px;
+    margin-bottom: 15px;
 }
 
-form {
-    margin-bottom: 20px;
+#test-review-result .notice {
+    padding: 10px;
+    margin-bottom: 15px;
 }
 
-label {
-    display: block;
-    margin-bottom: 5px;
+#test-review-result .generated-review {
+    white-space: pre-wrap;
+    background: #fff;
+    padding: 10px;
+    border: 1px solid #eee;
+    max-height: 300px; /* Limit height */
+    overflow-y: auto; /* Add scroll if needed */
+    font-family: monospace; /* Good for seeing raw output */
+    line-height: 1.6;
+}
+
+#publish-status {
+    font-style: italic;
+    margin-left: 10px;
+}
+#publish-status.success {
+    color: green;
+    font-weight: bold;
+}
+#publish-status.error {
+    color: red;
     font-weight: bold;
 }
 
-input[type="text"],
-input[type="number"],
-select {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
+/* Autocomplete loading indicator */
+.ui-autocomplete-loading {
+    background: white url('<?php echo esc_url(admin_url('images/wpspin_light.gif')); ?>') right center no-repeat; /* Use WP spinner */
 }
 
-.description {
-    color: #666;
-    font-size: 14px;
-    margin-top: 5px;
-}
-
-.button-primary {
-    background-color: #0073aa;
-    border-color: #0073aa;
-    color: #fff;
-}
-
-.button-primary:hover {
-    background-color: #005f80;
-    border-color: #005f80;
-}
-
-.updated {
-    margin-top: 20px;
-    padding: 10px 15px;
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-    color: #155724;
-    border-radius: 4px;
-}
-
-.error {
-    margin-top: 20px;
-    padding: 10px 15px;
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-    color: #721c24;
-    border-radius: 4px;
+/* Scheduled page table */
+.ai-reviews-admin-wrap .wp-list-table th {
+     font-weight: 600;
 }
